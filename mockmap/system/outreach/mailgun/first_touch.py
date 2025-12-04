@@ -30,7 +30,7 @@ MAILGUN_BASE_URL = f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
 # -----------------------------
 # Config
 # -----------------------------
-BATCH_SIZE = 10
+BATCH_SIZE = 5
 PAUSE_BETWEEN_EMAILS = 5  # seconds
 
 # -----------------------------
