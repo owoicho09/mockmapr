@@ -47,7 +47,7 @@ ICP_FILTERS = {
     "contact_email_status": ["verified", "likely to engage"],
     "organization_num_employees_ranges": ["1,100"],  # small/medium studios and print shops
 
-    "q_keywords": "design services, design, print, product design, branding, mockup generation, poster design, brand design, logo design, graphic design",
+    "q_keywords": "design services, signage, design, print, product design, branding, mockup generation, poster design, brand design, logo design, graphic design",
 
     "per_page": 20
 }

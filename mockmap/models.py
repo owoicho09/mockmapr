@@ -30,10 +30,10 @@ class Lead(models.Model):
     title = models.CharField(max_length=255,null=True,blank=True)
 
     website = models.CharField(max_length=255, null=True, blank=True)
-    address = models.CharField(max_length=50,null=True, blank=True)
+    address = models.CharField(max_length=1000,null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     keywords = models.TextField(null=True, blank=True)
-    linkedin_url = models.CharField(max_length=100,null=True, blank=True)
+    linkedin_url = models.CharField(max_length=1000,null=True, blank=True)
 
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=50, null=True, blank=True)

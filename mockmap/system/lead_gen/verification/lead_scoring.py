@@ -39,17 +39,17 @@ Score leads to determine if they match MockMapr’s Ideal Customer Profile (ICP)
 Ideal ICP matches include:
 
 1. Businesses selling physical products that require mockups:
-   - Examples: apparel, merchandise, posters, prints, packaging, custom products, Etsy stores, Shopify brands.
+   - Examples: apparel,signage, merchandise, posters, prints, packaging, custom products, Etsy stores, Shopify brands.
 
 2. Creative or branding agencies producing designs for clients:
-   - Examples: design studios, marketing agencies, brand identity firms.
+   - Examples: design studios, marketing agencies, brand identity firms, signage.
 
 3. Print shops or print-on-demand services:
    - Examples: local print shops, POD companies, screen printers, DTG printers, custom merch printers.
 
 Non-matches include:
 - Pure software companies, SaaS, or services unrelated to product visuals or mockups.
-- Companies that do not produce posters, prints, packaging, custom products or sell physical products, or do not need design assets.
+- Companies that do not produce posters,mockup, prints, packaging, custom products or sell physical products, or do not need design assets.
 
 Instructions:
 - Evaluate each lead individually.
