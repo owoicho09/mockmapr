@@ -1,0 +1,22 @@
+{
+  "print+shops+in+atlanta": {
+    "max_scroll_position": 158400,
+    "last_discovered_count": 118,
+    "timestamp": 1763474673.8771179
+  },
+  "restaurant+in+atlanta": {
+    "max_scroll_position": 49600,
+    "last_discovered_count": 55,
+    "timestamp": 1763408648.9733248
+  },
+  "print+shops+in+new+york": {
+    "max_scroll_position": 30400,
+    "last_discovered_count": 122,
+    "timestamp": 1763475070.735721
+  },
+  "print+shops+in+california": {
+    "max_scroll_position": 20000,
+    "last_discovered_count": 76,
+    "timestamp": 1763475868.900475
+  }
+}
