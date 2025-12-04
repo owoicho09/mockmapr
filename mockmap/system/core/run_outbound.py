@@ -21,6 +21,7 @@ django.setup()
 from mockmap.system.core.first_sequence import run_first_touch_sequence
 from mockmap.system.core.first_follow_up import run_followup_sequence
 from mockmap.system.core.second_follow_up import run_followup_sequence2
+from mockmap.system.core.send_update import send_emails
 
 # ---------------------------
 # Main orchestrator
@@ -66,6 +67,21 @@ def run_outbound():
 
 # ---------------------------
 # Entry point
-# ---------------------------
 if __name__ == "__main__":
+    # Run the main outbound function
     run_outbound()
+
+    # Email notification
+    recipient_list = ['michaelogaje033@gmail.com', 'kabdu@waxmarkets.com']
+    subject = "MockMapr Outbound System Update"
+    message = f"""
+Hello Team,
+
+The MockMapr outbound system has completed its latest run successfully.
+
+Next scheduled run: in 2 hours.
+
+Best regards,
+MockMapr Bot
+"""
+    send_emails(subject, message, recipient_list)
