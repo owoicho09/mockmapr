@@ -49,7 +49,7 @@ Ideal ICP matches include:
 
 Non-matches include:
 - Pure software companies, SaaS, or services unrelated to product visuals or mockups.
-- Companies that do not produce or sell physical products, or do not need design assets.
+- Companies that do not produce posters, prints, packaging, custom products or sell physical products, or do not need design assets.
 
 Instructions:
 - Evaluate each lead individually.

@@ -24,9 +24,13 @@ class HasEmailFilter(admin.SimpleListFilter):
 
 
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email','icp_match','icp_reason','icp_match')
-    list_filter = ('icp_match','title', HasEmailFilter)  # Use custom filter class here
+    list_display = ('name', 'email','icp_match','icp_reason','email_sent')
+    list_filter = ('icp_match','title', HasEmailFilter, 'source', 'email_sent')  # Use custom filter class here
+    search_fields = ('email', 'name')
 
+
+    def lead_email(self, obj):
+        return obj.lead.email
 
 class FollowupAdmin(admin.ModelAdmin):
     list_display = ('lead', 'ready_for_followup','template_type','followup_number')
@@ -40,12 +44,21 @@ class TemplateAdmin(admin.ModelAdmin):
 
 
 class OutreachTrackingAdmin(admin.ModelAdmin):
-    list_display = ('lead', 'event','timestamp','opened_at')
+    list_display = ('lead_email', 'event', 'timestamp', 'opened_at')
+    search_fields = ('lead__email',)
+
+    def lead_email(self, obj):
+        return obj.lead.email
 
 
 class OutreachSequenceAdmin(admin.ModelAdmin):
-    list_display = ('lead', 'status','email_subject','email_body')
+    list_display = ('lead_email', 'status', 'email_subject', 'email_body')
+    search_fields = ('lead__email',)
 
+    def lead_email(self, obj):
+        return obj.lead.email
+
+    lead_email.short_description = "Lead Email"
 
 
 

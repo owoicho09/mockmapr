@@ -72,7 +72,7 @@ if __name__ == "__main__":
     run_outbound()
 
     # Email notification
-    recipient_list = ['michaelogaje033@gmail.com', 'kabdu@waxmarkets.com']
+    recipient_list = ['michaelogaje033@gmail.com']
     subject = "MockMapr Outbound System Update"
     message = f"""
 Hello Team,

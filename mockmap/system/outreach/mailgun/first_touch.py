@@ -3,6 +3,7 @@ import sys
 import django
 import requests
 import time
+import random
 from datetime import datetime
 from dotenv import load_dotenv
 from django.utils import timezone
@@ -10,6 +11,7 @@ from django.utils import timezone
 # -----------------------------
 # Setup Django environment
 # -----------------------------
+print("🔧 Setting up Django environment...")
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "../../../.."))
 sys.path.insert(0, APP_ROOT)
@@ -19,27 +21,48 @@ django.setup()
 from mockmap.models import OutreachSequence, OutreachTracking
 
 # -----------------------------
-# Load environment
+# Load environment variables
 # -----------------------------
 load_dotenv()
 MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")  # e.g., mg.mockmapr.com
+MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
 REPLY_TO_EMAIL = "mockmaproutreach@gmail.com"
 MAILGUN_BASE_URL = f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages"
+
+print(f"🔑 Mailgun Domain: {MAILGUN_DOMAIN}")
+print(f"🔑 Mailgun API Key: {'SET' if MAILGUN_API_KEY else 'NOT SET'}")
 
 # -----------------------------
 # Config
 # -----------------------------
 BATCH_SIZE = 5
 PAUSE_BETWEEN_EMAILS = 5  # seconds
+WARMUP_EMAILS = [
+    "michaelogaje033@gmail.com",
+    "kennkiyoshi@gmail.com",
+    "owi.09.12.02@gmail.com",
+    "unitorial111@gmail.com",
+    "009.012.k2@gmail.com",
+    "u15529464@gmail.com",
+    "owoiichoo@gmail.com",
+    "genesissystems011@gmail.com",
+    "kacheofficiall@gmail.com",
+    "michael.m1904722@st.futminna.edu.ng",
+    "anthonyogaje44@gmail.com",
+]
 
 # -----------------------------
 # Mailgun send function
 # -----------------------------
-def send_email(outreach: OutreachSequence):
+def send_email(outreach: OutreachSequence, warmup_count=3):
+    # Select a random subset of warmup emails
+    warmup_subset = random.sample(WARMUP_EMAILS, k=min(warmup_count, len(WARMUP_EMAILS)))
+    recipients = [outreach.lead.email] + warmup_subset
+    print(f"[INFO] Sending to: {recipients}")
+
     data = {
         "from": f"MockMapr <no-reply@{MAILGUN_DOMAIN}>",
-        "to": outreach.lead.email,
+        "to": recipients,
         "subject": outreach.email_subject,
         "text": outreach.email_body,
         "html": outreach.email_body,
@@ -47,9 +70,10 @@ def send_email(outreach: OutreachSequence):
         "o:tracking": "yes",
         "o:tracking-clicks": "yes",
         "o:tracking-opens": "yes",
-        "o:tracking-domain": "email.mg.mockmaproutreach.com",
+        "o:tracking-domain": f"email.mg.{MAILGUN_DOMAIN}",
         "o:tracking-protocol": "https",
     }
+
     try:
         response = requests.post(
             MAILGUN_BASE_URL,
@@ -58,16 +82,18 @@ def send_email(outreach: OutreachSequence):
         )
         response.raise_for_status()
         result = response.json()
-        return result.get("id")
+        print(f"✔ Mailgun response: {result}")
+        return result.get("id"), warmup_subset
     except Exception as e:
         print(f"❌ Failed to send email to {outreach.lead.email}: {e}")
-        return None
+        return None, []
 
 # -----------------------------
-# Process pending OutreachSequence in batches
+# Process pending emails
 # -----------------------------
 def process_pending_emails():
     pending_sequences = OutreachSequence.objects.filter(status="pending")[:BATCH_SIZE]
+
     if not pending_sequences.exists():
         print("[INFO] No pending emails to send.")
         return
@@ -75,27 +101,44 @@ def process_pending_emails():
     print(f"[INFO] Sending {len(pending_sequences)} emails in this batch...")
 
     for outreach in pending_sequences:
-        message_id = send_email(outreach)
+        print(f"[INFO] Processing lead: {outreach.lead.email} | {outreach.lead.name}")
+        message_id, warmup_subset = send_email(outreach)
+
         if message_id:
+            # Update outreach status
             outreach.status = "sent"
             outreach.sent_at = timezone.now()
             outreach.save()
 
-            # Create tracking record
+            # Track real lead
             OutreachTracking.objects.create(
                 lead=outreach.lead,
                 sequence=outreach,
                 message_id=message_id,
                 event="delivered",
             )
-            print(f"✔ Email sent to {outreach.lead.email} | message_id: {message_id}")
+            outreach.lead.email_sent = True
+            outreach.lead.save()
+            print(f"✔ Email sent to real lead: {outreach.lead.email}")
+
+            # Track warmup inboxes
+            for warm_email in warmup_subset:
+                OutreachTracking.objects.create(
+                    lead=None,  # Shadow tracking
+                    sequence=outreach,
+                    message_id=message_id,
+                    event="delivered",
+                )
+                print(f"   ↳ Warmup tracking created for {warm_email}")
+
         else:
             outreach.status = "failed"
             outreach.save()
+            print(f"❌ Email FAILED for {outreach.lead.email}")
 
         time.sleep(PAUSE_BETWEEN_EMAILS)
 
-    print(f"[INFO] Batch completed. {len(pending_sequences)} emails processed.")
+    print("[INFO] Batch completed.")
 
 # -----------------------------
 # Run script

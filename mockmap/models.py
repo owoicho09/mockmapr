@@ -21,6 +21,8 @@ class Lead(models.Model):
     SOURCE_CHOICES = [
         ('google_maps', 'Google Maps'),
         ('apollo', 'Apollo'),
+        ('csv', 'CSV File'),
+
     ]
 
     company_name = models.CharField(max_length=255)
@@ -59,6 +61,9 @@ class Lead(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    def __str__(self):
+        return self.name
+
 
 class LeadStatus(models.Model):
     lead = models.OneToOneField(Lead, on_delete=models.CASCADE, related_name="status")
@@ -87,6 +92,8 @@ class Template(models.Model):
     content = models.TextField(help_text="Email or outreach template text")
 
     is_active = models.BooleanField(default=True)
+
+
 
 
     def __str__(self):
