@@ -54,18 +54,16 @@ WARMUP_EMAILS = [
 # -----------------------------
 # Mailgun send function
 # -----------------------------
-def send_email(outreach: OutreachSequence, warmup_count=3):
-    # Select a random subset of warmup emails
-    warmup_subset = random.sample(WARMUP_EMAILS, k=min(warmup_count, len(WARMUP_EMAILS)))
-    recipients = [outreach.lead.email] + warmup_subset
-    print(f"[INFO] Sending to: {recipients}")
-
+def send_email(to_email: str, subject: str, body: str):
+    """
+    Sends a single email via Mailgun
+    """
     data = {
         "from": f"MockMapr <no-reply@{MAILGUN_DOMAIN}>",
-        "to": recipients,
-        "subject": outreach.email_subject,
-        "text": outreach.email_body,
-        "html": outreach.email_body,
+        "to": to_email,
+        "subject": subject,
+        "text": body,
+        "html": body,
         "h:Reply-To": REPLY_TO_EMAIL,
         "o:tracking": "yes",
         "o:tracking-clicks": "yes",
@@ -83,26 +81,30 @@ def send_email(outreach: OutreachSequence, warmup_count=3):
         response.raise_for_status()
         result = response.json()
         print(f"✔ Mailgun response: {result}")
-        return result.get("id"), warmup_subset
+        return result.get("id")
     except Exception as e:
-        print(f"❌ Failed to send email to {outreach.lead.email}: {e}")
-        return None, []
+        print(f"❌ Failed to send email to {to_email}: {e}")
+        return None
 
 # -----------------------------
 # Process pending emails
 # -----------------------------
 def process_pending_emails():
-    pending_sequences = OutreachSequence.objects.filter(status="pending")[:BATCH_SIZE]
+    pending_sequences = list(OutreachSequence.objects.filter(status="pending")[:BATCH_SIZE])
 
-    if not pending_sequences.exists():
+    if not pending_sequences:
         print("[INFO] No pending emails to send.")
         return
 
     print(f"[INFO] Sending {len(pending_sequences)} emails in this batch...")
 
+    # Keep track of sent sequences to pick for warmup
+    sent_sequences = []
+
+    # Send emails to real leads
     for outreach in pending_sequences:
         print(f"[INFO] Processing lead: {outreach.lead.email} | {outreach.lead.name}")
-        message_id, warmup_subset = send_email(outreach)
+        message_id = send_email(outreach.lead.email, outreach.email_subject, outreach.email_body)
 
         if message_id:
             # Update outreach status
@@ -120,23 +122,34 @@ def process_pending_emails():
             outreach.lead.email_sent = True
             outreach.lead.save()
             print(f"✔ Email sent to real lead: {outreach.lead.email}")
-
-            # Track warmup inboxes
-            for warm_email in warmup_subset:
-                OutreachTracking.objects.create(
-                    lead=None,  # Shadow tracking
-                    sequence=outreach,
-                    message_id=message_id,
-                    event="delivered",
-                )
-                print(f"   ↳ Warmup tracking created for {warm_email}")
-
+            sent_sequences.append(outreach)
         else:
             outreach.status = "failed"
             outreach.save()
             print(f"❌ Email FAILED for {outreach.lead.email}")
 
         time.sleep(PAUSE_BETWEEN_EMAILS)
+
+    # -----------------------------
+    # Send one warmup email per batch
+    # -----------------------------
+    if sent_sequences:
+        warmup_sequence = random.choice(sent_sequences)
+        warmup_email = random.choice(WARMUP_EMAILS)
+        print(f"[INFO] Sending warmup email to {warmup_email} using subject from {warmup_sequence.lead.email}")
+
+        message_id = send_email(warmup_email, warmup_sequence.email_subject, warmup_sequence.email_body)
+
+        if message_id:
+            OutreachTracking.objects.create(
+                lead=None,  # Shadow tracking
+                sequence=warmup_sequence,
+                message_id=message_id,
+                event="delivered",
+            )
+            print(f"✔ Warmup email sent to {warmup_email}")
+        else:
+            print(f"❌ Warmup email FAILED for {warmup_email}")
 
     print("[INFO] Batch completed.")
 
