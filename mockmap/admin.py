@@ -25,7 +25,7 @@ class HasEmailFilter(admin.SimpleListFilter):
 
 class LeadAdmin(admin.ModelAdmin):
     list_display = ('name', 'email','icp_match','icp_reason','email_sent')
-    list_filter = ('icp_match','title', HasEmailFilter, 'source', 'email_sent')  # Use custom filter class here
+    list_filter = ('icp_match','title', HasEmailFilter, 'source', 'email_sent', 'email_verified')  # Use custom filter class here
     search_fields = ('email', 'name')
 
 
